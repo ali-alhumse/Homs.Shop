@@ -1,23 +1,19 @@
-import { getSupabaseClient } from '@services/supabase';
-import { successResponse, errorResponse } from '@shared/utils/response';
+import { requestHandler } from '@services/api/requestHandler';
 
 export const permissionService = {
-  async getUserPermissions(userId) {
-    try {
-      const supabase = getSupabaseClient();
-      if (!supabase) return errorResponse('NO_CLIENT', 'Permission service unavailable');
-
-      const { data, error } = await supabase
+  getUserPermissions(userId) {
+    return requestHandler(
+      (supabase) => supabase
         .from('user_permissions')
         .select('permission')
-        .eq('user_id', userId);
-
-      if (error) return errorResponse('FETCH_ERROR', 'Failed to load permissions');
-
-      return successResponse(data?.map((p) => p.permission) || []);
-    } catch (err) {
-      return errorResponse('PERMISSION_ERROR', 'Failed to load permissions');
-    }
+        .eq('user_id', userId),
+      {
+        source: 'PermissionService',
+        fallbackCode: 'FETCH_ERROR',
+        fallbackMessage: 'Failed to load permissions',
+        normalize: (result) => (result.data || []).map((p) => p.permission),
+      }
+    );
   },
 
   can(permissions, required) {

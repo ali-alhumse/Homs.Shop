@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { authService } from '../services/authService';
+import { getSupabaseClient } from '@services/supabase';
 
 export function useAuth() {
   const [user, setUser] = useState(null);
@@ -7,14 +8,35 @@ export function useAuth() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    let active = true;
+    let subscription = null;
+
+    const supabase = getSupabaseClient();
+    if (supabase) {
+      const { data } = supabase.auth.onAuthStateChange((event, session) => {
+        if (!active) return;
+        setUser(session?.user ?? null);
+        setError(null);
+        setLoading(false);
+      });
+      subscription = data.subscription;
+    }
+
     async function init() {
       const result = await authService.getSession();
+      if (!active) return;
       if (result.success && result.data?.user) {
         setUser(result.data.user);
       }
       setLoading(false);
     }
+
     init();
+
+    return () => {
+      active = false;
+      subscription?.unsubscribe();
+    };
   }, []);
 
   const login = useCallback(async (email, password) => {
