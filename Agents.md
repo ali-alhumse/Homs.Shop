@@ -170,7 +170,12 @@ Explain the uncertainty.
 Ask for clarification instead of guessing.
 
 ---
+Before writing any database query or migration:
+1. Read docs/database/table_names.md
+2. Use existing table names only
+3. Do not create new tables without approval
 
+---
 ## Final Rule
 
 The goal is not only to make the application work.
