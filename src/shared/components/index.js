@@ -12,6 +12,7 @@ export { AppToast, AppToastContainer, showToast } from './AppToast';
 export { AppLoading } from './AppLoading';
 
 export { ErrorBoundary } from './ErrorBoundary';
+export { ProtectedRoute } from './ProtectedRoute';
 
 export { Spinner } from './Spinner';
 export { Skeleton, SkeletonTable, SkeletonCard } from './Skeleton';

@@ -1,61 +1,49 @@
-import { getSupabaseClient } from '@services/supabase';
-import { successResponse, errorResponse } from '@shared/utils/response';
+import { requestHandler } from '@services/api/requestHandler';
 
 export const storageService = {
-  async listFiles(bucket, path = '') {
-    try {
-      const supabase = getSupabaseClient();
-      if (!supabase) return errorResponse('NO_CLIENT', 'Storage service unavailable');
-
-      const { data, error } = await supabase.storage.from(bucket).list(path);
-      if (error) return errorResponse('STORAGE_ERROR', 'Failed to list files');
-
-      return successResponse(data);
-    } catch (err) {
-      return errorResponse('STORAGE_ERROR', 'An error occurred while listing files');
-    }
+  listFiles(bucket, path = '') {
+    return requestHandler(
+      (supabase) => supabase.storage.from(bucket).list(path),
+      {
+        source: 'StorageService',
+        fallbackCode: 'STORAGE_ERROR',
+        fallbackMessage: 'Failed to list files',
+      }
+    );
   },
 
-  async getPublicUrl(bucket, path) {
-    try {
-      const supabase = getSupabaseClient();
-      if (!supabase) return errorResponse('NO_CLIENT', 'Storage service unavailable');
-
-      const { data } = supabase.storage.from(bucket).getPublicUrl(path);
-      return successResponse(data.publicUrl);
-    } catch (err) {
-      return errorResponse('STORAGE_ERROR', 'Failed to generate public URL');
-    }
+  getPublicUrl(bucket, path) {
+    return requestHandler(
+      (supabase) => supabase.storage.from(bucket).getPublicUrl(path),
+      {
+        source: 'StorageService',
+        fallbackCode: 'STORAGE_ERROR',
+        fallbackMessage: 'Failed to generate public URL',
+        normalize: (result) => result.data?.publicUrl ?? null,
+      }
+    );
   },
 
-  async deleteFile(bucket, path) {
-    try {
-      const supabase = getSupabaseClient();
-      if (!supabase) return errorResponse('NO_CLIENT', 'Storage service unavailable');
-
-      const { error } = await supabase.storage.from(bucket).remove([path]);
-      if (error) return errorResponse('STORAGE_ERROR', 'Failed to delete file');
-
-      return successResponse(null);
-    } catch (err) {
-      return errorResponse('STORAGE_ERROR', 'An error occurred while deleting file');
-    }
+  deleteFile(bucket, path) {
+    return requestHandler(
+      (supabase) => supabase.storage.from(bucket).remove([path]),
+      {
+        source: 'StorageService',
+        fallbackCode: 'STORAGE_ERROR',
+        fallbackMessage: 'Failed to delete file',
+      }
+    );
   },
 
-  async getSignedUrl(bucket, path, expiresIn = 60) {
-    try {
-      const supabase = getSupabaseClient();
-      if (!supabase) return errorResponse('NO_CLIENT', 'Storage service unavailable');
-
-      const { data, error } = await supabase.storage
-        .from(bucket)
-        .createSignedUrl(path, expiresIn);
-
-      if (error) return errorResponse('STORAGE_ERROR', 'Failed to create signed URL');
-
-      return successResponse(data.signedUrl);
-    } catch (err) {
-      return errorResponse('STORAGE_ERROR', 'An error occurred');
-    }
+  getSignedUrl(bucket, path, expiresIn = 60) {
+    return requestHandler(
+      (supabase) => supabase.storage.from(bucket).createSignedUrl(path, expiresIn),
+      {
+        source: 'StorageService',
+        fallbackCode: 'STORAGE_ERROR',
+        fallbackMessage: 'Failed to create signed URL',
+        normalize: (result) => result.data?.signedUrl ?? null,
+      }
+    );
   },
 };

@@ -1,4 +1,6 @@
 export const PERMISSIONS = {
+  DASHBOARD_ACCESS: 'dashboard.access',
+
   PRODUCTS_VIEW: 'products.view',
   PRODUCTS_CREATE: 'products.create',
   PRODUCTS_UPDATE: 'products.update',
@@ -16,6 +18,12 @@ export const PERMISSIONS = {
 
   PAYMENTS_VIEW: 'payments.view',
   PAYMENTS_MANAGE: 'payments.manage',
+
+  SHIPPING_VIEW: 'shipping.view',
+
+  INVOICES_VIEW: 'invoices.view',
+
+  MARKETING_VIEW: 'marketing.view',
 
   REPORTS_VIEW: 'reports.view',
 
