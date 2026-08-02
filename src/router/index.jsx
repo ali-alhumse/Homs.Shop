@@ -14,6 +14,12 @@ const DashboardPage = lazy(() =>
   }))
 );
 
+const LoginPage = lazy(() =>
+  import('@features/auth/pages/LoginPage').then((module) => ({
+    default: module.LoginPage,
+  }))
+);
+
 const publicFeatureRoutes = [
   { path: ROUTES.PRODUCTS, label: 'Products' },
   { path: ROUTES.ORDERS, label: 'Orders' },
@@ -33,7 +39,7 @@ export function AppRouter() {
   return (
     <Suspense fallback={<PageLoader message="Loading page..." />}>
       <Routes>
-        <Route path={ROUTES.LOGIN} element={<AuthLayout><div>Login Page</div></AuthLayout>} />
+        <Route path={ROUTES.LOGIN} element={<AuthLayout><LoginPage /></AuthLayout>} />
 
         {/* كل مستخدم مسجل */}
         <Route element={<ProtectedRoute />}>
