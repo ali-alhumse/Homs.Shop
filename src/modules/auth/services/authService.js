@@ -12,6 +12,29 @@ export const authService = {
     );
   },
 
+  async register({ email, password, firstName, lastName }) {
+    return requestHandler(
+      (supabase) =>
+        supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              first_name: firstName,
+              last_name: lastName,
+              full_name: `${firstName} ${lastName}`.trim(),
+            },
+          },
+        }),
+      {
+        source: 'AuthService',
+        fallbackCode: 'REGISTRATION_FAILED',
+        fallbackMessage: 'Unable to create your account. Please try again.',
+        normalize: (result) => result.data,
+      }
+    );
+  },
+
   logout() {
     return requestHandler(
       (supabase) => supabase.auth.signOut(),

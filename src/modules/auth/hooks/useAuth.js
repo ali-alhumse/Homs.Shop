@@ -52,6 +52,22 @@ export function useAuth() {
     return result;
   }, []);
 
+  const register = useCallback(async (credentials) => {
+    setLoading(true);
+    setError(null);
+    const result = await authService.register(credentials);
+    if (result.success) {
+      const session = result.data?.session;
+      if (session?.user) {
+        setUser(session.user);
+      }
+    } else {
+      setError(result.error);
+    }
+    setLoading(false);
+    return result;
+  }, []);
+
   const logout = useCallback(async () => {
     const result = await authService.logout();
     if (result.success) {
@@ -60,5 +76,5 @@ export function useAuth() {
     return result;
   }, []);
 
-  return { user, loading, error, login, logout, isAuthenticated: !!user };
+  return { user, loading, error, login, register, logout, isAuthenticated: !!user };
 }

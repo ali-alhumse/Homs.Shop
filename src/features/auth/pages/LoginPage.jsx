@@ -1,17 +1,17 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../../../modules/auth/hooks/useAuth';
-import { AppButton } from '../../../shared/components/AppButton';
-import { AppInput } from '../../../shared/components/AppInput';
-import { PageLoader } from '../../../shared/components/PageLoader';
-import { showToast } from '../../../shared/components/AppToast';
-import { ROUTES } from '../../../constants/routes';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useAuth } from '@modules/auth/hooks/useAuth';
+import { authValidator } from '@features/auth/validators/authValidator';
+import { AppButton } from '@shared/components/AppButton';
+import { AppInput } from '@shared/components/AppInput';
+import { PageLoader } from '@shared/components/PageLoader';
+import { showToast } from '@shared/components/AppToast';
+import { ROUTES } from '@constants/routes';
+
+const initialForm = { email: '', password: '' };
 
 export function LoginPage() {
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-  });
+  const [formData, setFormData] = useState(initialForm);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -19,7 +19,6 @@ export function LoginPage() {
   const location = useLocation();
   const { login, isAuthenticated, loading, error } = useAuth();
 
-  // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated && !loading) {
       const from = location.state?.from?.pathname || ROUTES.DASHBOARD;
@@ -27,54 +26,36 @@ export function LoginPage() {
     }
   }, [isAuthenticated, loading, navigate, location]);
 
-  // Handle auth error from auth hook
   useEffect(() => {
     if (error) {
       showToast('error', error.message || 'Authentication failed');
     }
   }, [error]);
 
-  const validateForm = () => {
-    const newErrors = {};
-    
-    if (!formData.email) {
-      newErrors.email = 'Email is required';
-    } else if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address';
-    }
-    
-    if (!formData.password) {
-      newErrors.password = 'Password is required';
-    }
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
   const handleChange = (field) => (e) => {
-    setFormData(prev => ({ ...prev, [field]: e.target.value }));
-    // Clear error for this field when user starts typing
+    setFormData((prev) => ({ ...prev, [field]: e.target.value }));
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
+      setErrors((prev) => ({ ...prev, [field]: '' }));
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!validateForm()) return;
-    
+
+    const { valid, errors: validationErrors } = authValidator.validateLogin(formData);
+    setErrors(validationErrors);
+    if (!valid) return;
+
     setIsSubmitting(true);
-    
+
     const result = await login(formData.email, formData.password);
-    
+
     if (result.success) {
       showToast('success', 'Login successful');
-      // Navigation will happen via useEffect hook
     } else {
       showToast('error', result.error?.message || 'Login failed');
     }
-    
+
     setIsSubmitting(false);
   };
 
@@ -83,12 +64,12 @@ export function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md space-y-8">
         <div>
           <div className="flex justify-center">
-            <div className="h-12 w-12 bg-primary-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-xl">HS</span>
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary-600">
+              <span className="text-xl font-bold text-white">HS</span>
             </div>
           </div>
           <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
@@ -139,18 +120,20 @@ export function LoginPage() {
               <div className="w-full border-t border-gray-300" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-gray-50 text-gray-500">Or</span>
+              <span className="bg-gray-50 px-2 text-gray-500">Or</span>
             </div>
           </div>
 
-          <div className="mt-6">
-            <AppButton
-              variant="secondary"
-              className="w-full"
-              onClick={() => window.location.href = 'mailto:support@homs-shop.com'}
-            >
-              Contact support for account access
-            </AppButton>
+          <div className="mt-6 text-center">
+            <p className="text-sm text-gray-600">
+              Don&apos;t have an account?{' '}
+              <Link
+                to={ROUTES.REGISTER}
+                className="font-medium text-primary-600 hover:text-primary-500"
+              >
+                Create one
+              </Link>
+            </p>
           </div>
         </div>
 

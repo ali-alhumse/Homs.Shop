@@ -10,6 +10,7 @@ export const ROUTES = {
   MARKETING: '/marketing',
   SETTINGS: '/settings',
   LOGIN: '/login',
+  REGISTER: '/register',
 };
 
 export const ROUTE_LABELS = {
